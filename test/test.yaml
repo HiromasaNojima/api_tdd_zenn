@@ -1,0 +1,13 @@
+title: ユーザー情報取得
+steps:
+  - title: get
+    protocol: http
+    request:
+      method: GET
+      url: http://localhost:8080/users/1
+    expect:
+      code: OK
+      body:
+        id: 1
+        name: ユーザー名
+        age: 20
