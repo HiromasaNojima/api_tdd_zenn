@@ -1,25 +1,46 @@
 package main
 
-import "net/http"
-
-// title: ユーザー情報取得
-// steps:
-//   - title: get
-//     protocol: http
-//     request:
-//       method: GET
-//       url: http://localhost:8080/users/1
-//     expect:
-//       code: OK
-//       body:
-//         id: 1
-//         name: ユーザー名
-//         age: 20
+import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"path/filepath"
+	"strconv"
+	"strings"
+)
 
 func main() {
-	http.HandleFunc("/users/1", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/users/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{"id":1,"name":"ユーザー名","age":20}`))
+		sub := strings.TrimPrefix(r.URL.Path, "/users/")
+		_, id := filepath.Split(sub)
+		// id to int
+		userID, _ := strconv.Atoi(id)
+		user, _ := GetUser(userID)
+		response, _ := json.Marshal(user)
+		w.Write(response)
 	})
 	http.ListenAndServe(":8080", nil)
+}
+
+type User struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+	Age  int    `json:"age"`
+}
+
+func GetUser(id int) (User, error) {
+	user, ok := database[id]
+	if !ok {
+		return User{}, fmt.Errorf("id %d is not found", id)
+	}
+	return user, nil
+}
+
+// 簡易的なデータベース
+var database map[int]User = map[int]User{
+	1: {ID: 1, Name: "ユーザー名", Age: 20},
+	2: {ID: 2, Name: "Taro", Age: 21},
+	3: {ID: 3, Name: "Jiro", Age: 22},
+	// ...
 }
